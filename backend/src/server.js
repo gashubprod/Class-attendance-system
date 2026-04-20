@@ -247,13 +247,6 @@ async function seedDemoData() {
     ],
   );
 
-  await seedCompletedDemoSession({
-    lecturerId,
-    studentAId,
-    studentBId,
-    studentCId,
-    courseId,
-  });
 }
 
 async function seedCompletedDemoSession({

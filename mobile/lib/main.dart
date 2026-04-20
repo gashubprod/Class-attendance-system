@@ -698,82 +698,75 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final activeSessions = _sessions
-        .where((session) => session.isActive)
-        .toList();
-    final historySessions = _sessions
-        .where((session) => session.isEnded)
-        .toList();
+    final activeSessions = _sortSessionsNewestFirst(
+      _sessions.where((session) => session.isActive),
+    );
+    final currentSession = activeSessions.isEmpty ? null : activeSessions.first;
+    final historySessions = _sortSessionsNewestFirst(
+      _sessions.where(
+        (session) => currentSession == null || session.id != currentSession.id,
+      ),
+    );
 
     return DashboardScaffold(
       user: widget.user,
       title: 'Lecturer',
       onRefresh: _loadDashboard,
       onLogout: widget.onLogout,
+      onOpenHistory: () {
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => LecturerHistoryPage(
+              user: widget.user,
+              sessions: historySessions,
+              reports: _reports,
+              lecturesBySession: _lecturesBySession,
+            ),
+          ),
+        );
+      },
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          _CreateSessionCard(
-            courses: _courses,
-            selectedCourseId: _selectedCourseId,
-            titleController: _titleController,
-            onCourseChanged: (value) =>
-                setState(() => _selectedCourseId = value),
-            onCreatePressed: _createAndStartSession,
-          ),
-          const SizedBox(height: 20),
           if (_busy)
             const Center(child: CircularProgressIndicator())
           else if (_error != null)
             InfoCard(title: 'Backend issue', body: _error!)
           else ...[
-            if (activeSessions.isEmpty)
-              const InfoCard(
-                title: 'No live sessions',
-                body: 'Start a session to begin attendance.',
+            if (currentSession == null) ...[
+              _CreateSessionCard(
+                courses: _courses,
+                selectedCourseId: _selectedCourseId,
+                titleController: _titleController,
+                onCourseChanged: (value) =>
+                    setState(() => _selectedCourseId = value),
+                onCreatePressed: _createAndStartSession,
               )
-            else
-              ...activeSessions.map((session) {
-                final report = _reports[session.id];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: LecturerSessionCard(
-                    session: session,
-                    report: report,
-                    lecture: _lecturesBySession[session.id],
-                    generatingLecture: _uploadingSessions.contains(session.id),
-                    isRecording: _isRecordingSession(session),
-                    recordedAudioName: _recordedAudioNameFor(session),
-                    onStartRecording: () => _startAudioRecording(session),
-                    onStopRecording: () => _stopAudioRecording(session),
-                    onUploadAudio: () => _uploadAudioLecture(session),
-                    onEndSession: () => _endSession(session),
-                    onOverrideAttendance: _overrideAttendance,
-                  ),
-                );
-              }),
-            if (historySessions.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              const SectionHeader(title: 'Past Sessions'),
-              ...historySessions.map((session) {
-                final report = _reports[session.id];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: LecturerSessionCard(
-                    session: session,
-                    report: report,
-                    lecture: _lecturesBySession[session.id],
-                    generatingLecture: _uploadingSessions.contains(session.id),
-                    isRecording: _isRecordingSession(session),
-                    recordedAudioName: _recordedAudioNameFor(session),
-                    onStartRecording: () => _startAudioRecording(session),
-                    onStopRecording: () => _stopAudioRecording(session),
-                    onUploadAudio: () => _uploadAudioLecture(session),
-                    onOverrideAttendance: _overrideAttendance,
-                  ),
-                );
-              }),
-            ],
+            ] else
+              LecturerCurrentSessionCard(
+                session: currentSession,
+                report: _reports[currentSession.id],
+                lecture: _lecturesBySession[currentSession.id],
+                generatingLecture: _uploadingSessions.contains(currentSession.id),
+                isRecording: _isRecordingSession(currentSession),
+                recordedAudioName: _recordedAudioNameFor(currentSession),
+                onStartRecording: () => _startAudioRecording(currentSession),
+                onStopRecording: () => _stopAudioRecording(currentSession),
+                onUploadAudio: () => _uploadAudioLecture(currentSession),
+                onEndSession: () => _endSession(currentSession),
+                onOpenDetails: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (context) => LecturerSessionDetailsPage(
+                        session: currentSession,
+                        report: _reports[currentSession.id],
+                        lecture: _lecturesBySession[currentSession.id],
+                        onOverrideAttendance: _overrideAttendance,
+                      ),
+                    ),
+                  );
+                },
+              ),
           ],
         ],
       ),
@@ -889,18 +882,32 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final activeSessions = _sessions
-        .where((session) => session.isActive)
-        .toList();
-    final recentSessions = _sessions
-        .where((session) => session.isEnded)
-        .toList();
+    final activeSessions = _sortSessionsNewestFirst(
+      _sessions.where((session) => session.isActive),
+    );
+    final currentSession = activeSessions.isEmpty ? null : activeSessions.first;
+    final historySessions = _sortSessionsNewestFirst(
+      _sessions.where(
+        (session) => currentSession == null || session.id != currentSession.id,
+      ),
+    );
 
     return DashboardScaffold(
       user: widget.user,
       title: 'Student',
       onRefresh: _loadDashboard,
       onLogout: widget.onLogout,
+      onOpenHistory: () {
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => StudentHistoryPage(
+              user: widget.user,
+              sessions: historySessions,
+              lecturesBySession: _lecturesBySession,
+            ),
+          ),
+        );
+      },
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -934,39 +941,20 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
           else if (_error != null)
             InfoCard(title: 'Backend issue', body: _error!)
           else ...[
-            const SectionHeader(title: 'Live'),
-            if (activeSessions.isEmpty)
+            const SectionHeader(title: 'Current Session'),
+            if (currentSession == null)
               const InfoCard(
                 title: 'No live sessions',
                 body: 'Ask the lecturer to start a class session.',
               )
             else
-              ...activeSessions.map(
-                (session) => Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: StudentActiveSessionCard(
-                    session: session,
-                    codeController: _codeControllerFor(session.id),
-                    ssid: _ssidController.text.trim(),
-                    onCheckIn: () => _checkIn(session),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 8),
-            const SectionHeader(title: 'Recent'),
-            if (recentSessions.isEmpty)
-              const InfoCard(
-                title: 'No recent sessions',
-                body: 'Completed sessions will appear here.',
-              )
-            else
-              ...recentSessions.map(
-                (session) => Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: StudentHistorySessionCard(
-                    session: session,
-                    lecture: _lecturesBySession[session.id],
-                  ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: StudentActiveSessionCard(
+                  session: currentSession,
+                  codeController: _codeControllerFor(currentSession.id),
+                  ssid: _ssidController.text.trim(),
+                  onCheckIn: () => _checkIn(currentSession),
                 ),
               ),
           ],
@@ -984,6 +972,7 @@ class DashboardScaffold extends StatelessWidget {
     required this.onRefresh,
     required this.onLogout,
     required this.child,
+    this.onOpenHistory,
     this.subtitle,
   });
 
@@ -993,6 +982,7 @@ class DashboardScaffold extends StatelessWidget {
   final Future<void> Function({bool quiet}) onRefresh;
   final VoidCallback onLogout;
   final Widget child;
+  final VoidCallback? onOpenHistory;
 
   @override
   Widget build(BuildContext context) {
@@ -1006,6 +996,11 @@ class DashboardScaffold extends StatelessWidget {
             onPressed: () => onRefresh(quiet: false),
             icon: const Icon(Icons.refresh),
           ),
+          if (onOpenHistory != null)
+            IconButton(
+              onPressed: onOpenHistory,
+              icon: const Icon(Icons.history),
+            ),
           IconButton(onPressed: onLogout, icon: const Icon(Icons.logout)),
         ],
       ),
@@ -1161,6 +1156,205 @@ class _CreateSessionCard extends StatelessWidget {
   }
 }
 
+class LecturerCurrentSessionCard extends StatelessWidget {
+  const LecturerCurrentSessionCard({
+    super.key,
+    required this.session,
+    required this.report,
+    required this.lecture,
+    required this.generatingLecture,
+    required this.isRecording,
+    required this.recordedAudioName,
+    required this.onStartRecording,
+    required this.onStopRecording,
+    required this.onUploadAudio,
+    required this.onEndSession,
+    required this.onOpenDetails,
+  });
+
+  final SessionSummary session;
+  final SessionReport? report;
+  final LectureRecord? lecture;
+  final bool generatingLecture;
+  final bool isRecording;
+  final String? recordedAudioName;
+  final VoidCallback onStartRecording;
+  final VoidCallback onStopRecording;
+  final VoidCallback onUploadAudio;
+  final VoidCallback onEndSession;
+  final VoidCallback onOpenDetails;
+
+  @override
+  Widget build(BuildContext context) {
+    final countdown = session.attendanceClosesAt == null
+        ? 'Attendance closed'
+        : _timeRemainingLabel(session.attendanceClosesAt!);
+    final audioAlreadySubmitted =
+        lecture != null && lecture!.sourceType == 'audio_upload';
+    final canRetryUpload =
+        recordedAudioName != null && !isRecording && !audioAlreadySubmitted;
+    final audioActionLabel = generatingLecture
+        ? 'Uploading...'
+        : isRecording
+        ? 'Stop & Upload'
+        : canRetryUpload
+        ? 'Retry Upload'
+        : audioAlreadySubmitted
+        ? 'Audio Submitted'
+        : 'Start Recording';
+    final counts = report?.counts ?? const <String, int>{};
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${session.courseCode} - ${session.title}',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                StatusPill(label: session.status, status: session.status),
+                StatusPill(
+                  label: 'Code ${session.code ?? '--'}',
+                  status: 'present',
+                ),
+                StatusPill(label: countdown, status: 'late'),
+                if (lecture != null)
+                  StatusPill(
+                    label: 'Lecture ${lecture!.status}',
+                    status: lecture!.status,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                StatusPill(
+                  label: 'present: ${counts['present'] ?? 0}',
+                  status: 'present',
+                ),
+                StatusPill(
+                  label: 'late: ${counts['late'] ?? 0}',
+                  status: 'late',
+                ),
+                StatusPill(
+                  label: 'absent: ${counts['absent'] ?? 0}',
+                  status: 'absent',
+                ),
+              ],
+            ),
+            if (recordedAudioName != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9F5EF),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  isRecording
+                      ? 'Recording in progress...'
+                      : 'Pending upload: $recordedAudioName',
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                FilledButton.tonalIcon(
+                  onPressed:
+                      generatingLecture || audioAlreadySubmitted
+                      ? null
+                      : isRecording
+                      ? onStopRecording
+                      : canRetryUpload
+                      ? onUploadAudio
+                      : onStartRecording,
+                  icon: Icon(
+                    isRecording
+                        ? Icons.stop_circle
+                        : canRetryUpload
+                        ? Icons.cloud_upload_outlined
+                        : audioAlreadySubmitted
+                        ? Icons.check_circle_outline
+                        : Icons.mic,
+                  ),
+                  label: Text(audioActionLabel),
+                ),
+                FilledButton.tonalIcon(
+                  onPressed: onOpenDetails,
+                  icon: const Icon(Icons.visibility_outlined),
+                  label: const Text('Details'),
+                ),
+                FilledButton.tonalIcon(
+                  onPressed: onEndSession,
+                  icon: const Icon(Icons.stop_circle_outlined),
+                  label: const Text('End Session'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class LecturerSessionDetailsPage extends StatelessWidget {
+  const LecturerSessionDetailsPage({
+    super.key,
+    required this.session,
+    required this.report,
+    required this.lecture,
+    required this.onOverrideAttendance,
+  });
+
+  final SessionSummary session;
+  final SessionReport? report;
+  final LectureRecord? lecture;
+  final Future<void> Function(AttendanceRecord record, String status)
+  onOverrideAttendance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Session Details')),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          LecturerSessionCard(
+            session: session,
+            report: report,
+            lecture: lecture,
+            generatingLecture: false,
+            isRecording: false,
+            recordedAudioName: null,
+            showLectureControls: false,
+            allowAttendanceOverrides: true,
+            onStartRecording: () {},
+            onStopRecording: () {},
+            onUploadAudio: () {},
+            onOverrideAttendance: onOverrideAttendance,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class LecturerSessionCard extends StatelessWidget {
   const LecturerSessionCard({
     super.key,
@@ -1175,6 +1369,8 @@ class LecturerSessionCard extends StatelessWidget {
     required this.onUploadAudio,
     required this.onOverrideAttendance,
     this.onEndSession,
+    this.showLectureControls = true,
+    this.allowAttendanceOverrides = true,
   });
 
   final SessionSummary session;
@@ -1189,6 +1385,8 @@ class LecturerSessionCard extends StatelessWidget {
   final VoidCallback? onEndSession;
   final Future<void> Function(AttendanceRecord record, String status)
   onOverrideAttendance;
+  final bool showLectureControls;
+  final bool allowAttendanceOverrides;
 
   @override
   Widget build(BuildContext context) {
@@ -1274,86 +1472,95 @@ class LecturerSessionCard extends StatelessWidget {
                     subtitle: Text(
                       '${record.studentEmail}${record.checkedInAt == null ? '' : ' - ${_formatDateTime(record.checkedInAt!)}'}',
                     ),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (status) =>
-                          onOverrideAttendance(record, status),
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
-                          value: 'present',
-                          child: Text('Mark present'),
-                        ),
-                        PopupMenuItem(value: 'late', child: Text('Mark late')),
-                        PopupMenuItem(
-                          value: 'absent',
-                          child: Text('Mark absent'),
-                        ),
-                        PopupMenuItem(
-                          value: 'excused',
-                          child: Text('Mark excused'),
-                        ),
-                        PopupMenuItem(
-                          value: 'invalid',
-                          child: Text('Mark invalid'),
-                        ),
-                      ],
-                      child: StatusPill(
-                        label: record.status,
-                        status: record.status,
-                      ),
-                    ),
+                    trailing: allowAttendanceOverrides
+                        ? PopupMenuButton<String>(
+                            onSelected: (status) =>
+                                onOverrideAttendance(record, status),
+                            itemBuilder: (context) => const [
+                              PopupMenuItem(
+                                value: 'present',
+                                child: Text('Mark present'),
+                              ),
+                              PopupMenuItem(
+                                value: 'late',
+                                child: Text('Mark late'),
+                              ),
+                              PopupMenuItem(
+                                value: 'absent',
+                                child: Text('Mark absent'),
+                              ),
+                              PopupMenuItem(
+                                value: 'excused',
+                                child: Text('Mark excused'),
+                              ),
+                              PopupMenuItem(
+                                value: 'invalid',
+                                child: Text('Mark invalid'),
+                              ),
+                            ],
+                            child: StatusPill(
+                              label: record.status,
+                              status: record.status,
+                            ),
+                          )
+                        : StatusPill(
+                            label: record.status,
+                            status: record.status,
+                          ),
                   ),
                 ),
               ),
             ],
-            const SizedBox(height: 6),
-            const SizedBox(height: 10),
-            if (recordedAudioName != null)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF9F5EF),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Text(
-                  isRecording
-                      ? 'Recording in progress...'
-                      : 'Pending upload: $recordedAudioName',
-                ),
-              ),
-            if (recordedAudioName != null) const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                FilledButton.tonalIcon(
-                  onPressed:
-                      generatingLecture || audioAlreadySubmitted
-                      ? null
-                      : isRecording
-                      ? onStopRecording
-                      : canRetryUpload
-                      ? onUploadAudio
-                      : onStartRecording,
-                  icon: Icon(
+            if (showLectureControls) ...[
+              const SizedBox(height: 10),
+              if (recordedAudioName != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9F5EF),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Text(
                     isRecording
-                        ? Icons.stop_circle
-                        : canRetryUpload
-                        ? Icons.cloud_upload_outlined
-                        : audioAlreadySubmitted
-                        ? Icons.check_circle_outline
-                        : Icons.mic,
+                        ? 'Recording in progress...'
+                        : 'Pending upload: $recordedAudioName',
                   ),
-                  label: Text(audioActionLabel),
                 ),
-                if (onEndSession != null)
+              if (recordedAudioName != null) const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
                   FilledButton.tonalIcon(
-                    onPressed: onEndSession,
-                    icon: const Icon(Icons.stop_circle_outlined),
-                    label: const Text('End Session'),
+                    onPressed:
+                        generatingLecture || audioAlreadySubmitted
+                        ? null
+                        : isRecording
+                        ? onStopRecording
+                        : canRetryUpload
+                        ? onUploadAudio
+                        : onStartRecording,
+                    icon: Icon(
+                      isRecording
+                          ? Icons.stop_circle
+                          : canRetryUpload
+                          ? Icons.cloud_upload_outlined
+                          : audioAlreadySubmitted
+                          ? Icons.check_circle_outline
+                          : Icons.mic,
+                    ),
+                    label: Text(audioActionLabel),
                   ),
-              ],
-            ),
+                  if (onEndSession != null)
+                    FilledButton.tonalIcon(
+                      onPressed: onEndSession,
+                      icon: const Icon(Icons.stop_circle_outlined),
+                      label: const Text('End Session'),
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: 18),
             LectureSummaryPanel(
               lecture: lecture,
@@ -1485,6 +1692,98 @@ class StudentHistorySessionCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class LecturerHistoryPage extends StatelessWidget {
+  const LecturerHistoryPage({
+    super.key,
+    required this.user,
+    required this.sessions,
+    required this.reports,
+    required this.lecturesBySession,
+  });
+
+  final AppUser user;
+  final List<SessionSummary> sessions;
+  final Map<String, SessionReport> reports;
+  final Map<String, LectureRecord> lecturesBySession;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('History')),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          if (sessions.isEmpty)
+            const InfoCard(
+              title: 'No history yet',
+              body: 'Older sessions will appear here.',
+            )
+          else
+            ...sessions.map(
+              (session) => Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: LecturerSessionCard(
+                  session: session,
+                  report: reports[session.id],
+                  lecture: lecturesBySession[session.id],
+                  generatingLecture: false,
+                  isRecording: false,
+                  recordedAudioName: null,
+                  showLectureControls: false,
+                  allowAttendanceOverrides: false,
+                  onStartRecording: () {},
+                  onStopRecording: () {},
+                  onUploadAudio: () {},
+                  onOverrideAttendance: (record, status) async {},
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class StudentHistoryPage extends StatelessWidget {
+  const StudentHistoryPage({
+    super.key,
+    required this.user,
+    required this.sessions,
+    required this.lecturesBySession,
+  });
+
+  final AppUser user;
+  final List<SessionSummary> sessions;
+  final Map<String, LectureRecord> lecturesBySession;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('History')),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          if (sessions.isEmpty)
+            const InfoCard(
+              title: 'No history yet',
+              body: 'Older sessions will appear here.',
+            )
+          else
+            ...sessions.map(
+              (session) => Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: StudentHistorySessionCard(
+                  session: session,
+                  lecture: lecturesBySession[session.id],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -1702,6 +2001,23 @@ class StatusPill extends StatelessWidget {
       ),
     );
   }
+}
+
+List<SessionSummary> _sortSessionsNewestFirst(Iterable<SessionSummary> sessions) {
+  final list = sessions.toList();
+  list.sort(
+    (left, right) => _sessionSortTime(
+      right,
+    ).compareTo(_sessionSortTime(left)),
+  );
+  return list;
+}
+
+DateTime _sessionSortTime(SessionSummary session) {
+  return session.startedAt ??
+      session.endedAt ??
+      session.latestLectureCreatedAt ??
+      DateTime.fromMillisecondsSinceEpoch(0);
 }
 
 String _timeRemainingLabel(DateTime value) {
