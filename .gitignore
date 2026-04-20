@@ -1,0 +1,9 @@
+backend/node_modules/
+backend/.env
+backend/uploads/
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.idea/
+mobile/build/
+mobile/.packages
