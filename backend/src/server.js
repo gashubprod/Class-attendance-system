@@ -673,11 +673,14 @@ async function createSession(user, req, res) {
   );
 
   json(res, 201, {
-    session: {
-      ...result.rows[0],
-      courseCode: course.code,
-      courseTitle: course.title,
-    },
+    session: publicSessionView(
+      {
+        ...result.rows[0],
+        course_code: course.code,
+        course_title: course.title,
+      },
+      new Date(),
+    ),
   });
 }
 

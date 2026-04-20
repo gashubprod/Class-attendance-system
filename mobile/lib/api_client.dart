@@ -169,7 +169,7 @@ class ApiClient {
       return LectureRecord.fromJson(decoded['lecture'] as Map<String, dynamic>);
     } on SocketException {
       throw const ApiException(
-        'Could not reach the backend. Check that the API server is running and the base URL is correct.',
+        'Could not reach the backend. Check your internet connection and try again in a few seconds.',
       );
     } finally {
       client.close(force: true);
@@ -224,7 +224,7 @@ class ApiClient {
       return decoded;
     } on SocketException {
       throw const ApiException(
-        'Could not reach the backend. Check that the API server is running and the base URL is correct.',
+        'Could not reach the backend. Check your internet connection and try again in a few seconds.',
       );
     } finally {
       client.close(force: true);

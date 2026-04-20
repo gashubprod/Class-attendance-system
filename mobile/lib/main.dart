@@ -13,17 +13,7 @@ void main() {
   runApp(const AttendanceDemoApp());
 }
 
-String defaultBaseUrl() {
-  try {
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8080';
-    }
-  } catch (_) {
-    // The app is scoped for mobile, but fallback to localhost for desktop tooling.
-  }
-
-  return 'http://127.0.0.1:8080';
-}
+const appApiBaseUrl = 'https://class-attendance-demo-api.onrender.com';
 
 class AttendanceDemoApp extends StatefulWidget {
   const AttendanceDemoApp({super.key});
@@ -33,15 +23,13 @@ class AttendanceDemoApp extends StatefulWidget {
 }
 
 class _AttendanceDemoAppState extends State<AttendanceDemoApp> {
-  late final ApiClient _apiClient = ApiClient(baseUrl: defaultBaseUrl());
+  late final ApiClient _apiClient = ApiClient(baseUrl: appApiBaseUrl);
   AppUser? _user;
 
   Future<void> _login({
-    required String baseUrl,
     required String email,
     required String password,
   }) async {
-    _apiClient.baseUrl = baseUrl.trim();
     final result = await _apiClient.login(email: email, password: password);
     setState(() {
       _user = result.user;
@@ -104,7 +92,6 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, required this.onLogin});
 
   final Future<void> Function({
-    required String baseUrl,
     required String email,
     required String password,
   })
@@ -115,19 +102,16 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  late final TextEditingController _baseUrlController = TextEditingController(
-    text: defaultBaseUrl(),
-  );
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController(
     text: 'demo1234',
   );
   bool _busy = false;
+  bool _obscurePassword = true;
   String? _error;
 
   @override
   void dispose() {
-    _baseUrlController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -141,7 +125,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await widget.onLogin(
-        baseUrl: _baseUrlController.text,
         email: _emailController.text,
         password: _passwordController.text,
       );
@@ -171,94 +154,221 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: const Color(0xFFF4ECE2),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(28),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'RollCall Campus',
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF8F5327), Color(0xFFC9834A)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(36),
+                          bottomRight: Radius.circular(36),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Mobile-first attendance with short-lived session codes, campus Wi-Fi proof, and lecturer override controls.',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: const Color(0xFF5A564D),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 22, 24, 28),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(22),
+                              ),
+                              child: const Icon(
+                                Icons.verified_user_rounded,
+                                color: Colors.white,
+                                size: 34,
+                              ),
+                            ),
+                            const SizedBox(height: 22),
+                            Text(
+                              'RollCall Campus',
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: -0.4,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Attendance, lecture capture, and class summaries in one mobile workflow.',
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      TextField(
-                        controller: _baseUrlController,
-                        decoration: const InputDecoration(
-                          labelText: 'API base URL',
-                          hintText: 'http://127.0.0.1:8080',
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(labelText: 'Email'),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: [
-                          FilledButton.tonal(
-                            onPressed: () => _fillDemo('lecturer'),
-                            child: const Text('Use Lecturer Demo'),
-                          ),
-                          FilledButton.tonal(
-                            onPressed: () => _fillDemo('student'),
-                            child: const Text('Use Student Demo'),
-                          ),
-                        ],
-                      ),
-                      if (_error != null) ...[
-                        const SizedBox(height: 16),
-                        Text(
-                          _error!,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.error,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 20),
-                      FilledButton(
-                        onPressed: _busy ? null : _submit,
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(52),
-                        ),
-                        child: Text(_busy ? 'Signing in...' : 'Sign in'),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Android emulator should use 10.0.2.2. A physical phone should use your computer LAN IP instead of localhost.',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF6F6A62),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x18000000),
+                              blurRadius: 24,
+                              offset: Offset(0, 14),
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Welcome back',
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFF2F241A),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Sign in with your campus account to continue.',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: const Color(0xFF776B5D),
+                                  height: 1.35,
+                                ),
+                              ),
+                              const SizedBox(height: 22),
+                              TextField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: const InputDecoration(
+                                  labelText: 'Email',
+                                  hintText: 'lecturer@campus.local',
+                                  prefixIcon: Icon(Icons.alternate_email),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                onSubmitted: (_) => _busy ? null : _submit(),
+                                decoration: InputDecoration(
+                                  labelText: 'Password',
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (_error != null) ...[
+                                const SizedBox(height: 14),
+                                Text(
+                                  _error!,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.error,
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 22),
+                              FilledButton(
+                                onPressed: _busy ? null : _submit,
+                                style: FilledButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(56),
+                                  backgroundColor: const Color(0xFF8F5327),
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: Text(
+                                  _busy ? 'Signing in...' : 'Sign In',
+                                ),
+                              ),
+                              const SizedBox(height: 22),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF6EFE8),
+                                  borderRadius: BorderRadius.circular(22),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Quick demo access',
+                                      style: theme.textTheme.titleSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            color: const Color(0xFF2F241A),
+                                          ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'Prefill a seeded account, then tap Sign In.',
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: const Color(0xFF776B5D),
+                                          ),
+                                    ),
+                                    const SizedBox(height: 14),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: () =>
+                                                _fillDemo('lecturer'),
+                                            icon: const Icon(
+                                              Icons.school_outlined,
+                                            ),
+                                            label: const Text('Lecturer'),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: () =>
+                                                _fillDemo('student'),
+                                            icon: const Icon(
+                                              Icons.badge_outlined,
+                                            ),
+                                            label: const Text('Student'),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -613,9 +723,7 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
 
     return DashboardScaffold(
       user: widget.user,
-      title: 'Lecturer Console',
-      subtitle:
-          'Create sessions, manage attendance, and generate lecture summaries for the demo.',
+      title: 'Lecturer',
       onRefresh: _loadDashboard,
       onLogout: widget.onLogout,
       child: ListView(
@@ -635,16 +743,11 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
           else if (_error != null)
             InfoCard(title: 'Backend issue', body: _error!)
           else ...[
-            const SectionHeader(
-              title: 'Active Sessions',
-              subtitle:
-                  'Live codes, attendance reports, and audio or text lecture capture.',
-            ),
+            const SectionHeader(title: 'Live'),
             if (activeSessions.isEmpty)
               const InfoCard(
-                title: 'No active sessions',
-                body:
-                    'Create and start a session to expose the live code and collect attendance.',
+                title: 'No live sessions',
+                body: 'Start a session to begin attendance.',
               )
             else
               ...activeSessions.map((session) {
@@ -670,15 +773,11 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
                 );
               }),
             const SizedBox(height: 8),
-            const SectionHeader(
-              title: 'Session History',
-              subtitle: 'Ended sessions with reports and completed summaries.',
-            ),
+            const SectionHeader(title: 'History'),
             if (historySessions.isEmpty)
               const InfoCard(
-                title: 'No session history',
-                body:
-                    'Ended sessions will appear here together with lecture summaries.',
+                title: 'No history yet',
+                body: 'Ended sessions will appear here.',
               )
             else
               ...historySessions.map((session) {
@@ -727,7 +826,7 @@ class StudentHomePage extends StatefulWidget {
 
 class _StudentHomePageState extends DashboardPage<StudentHomePage> {
   final TextEditingController _ssidController = TextEditingController(
-    text: 'CampusNet',
+    text: 'Wapi-Guest',
   );
   final Map<String, TextEditingController> _codeControllers = {};
   Timer? _refreshTimer;
@@ -826,9 +925,7 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
 
     return DashboardScaffold(
       user: widget.user,
-      title: 'Student Check-in',
-      subtitle:
-          'Join live classes with the lecturer code, then review the lecture summary afterward.',
+      title: 'Student',
       onRefresh: _loadDashboard,
       onLogout: widget.onLogout,
       child: ListView(
@@ -841,7 +938,7 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Campus Wi-Fi proof',
+                    'Network',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -850,8 +947,8 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
                   TextField(
                     controller: _ssidController,
                     decoration: const InputDecoration(
-                      labelText: 'Detected or expected SSID',
-                      hintText: 'CampusNet',
+                      labelText: 'Wi-Fi name',
+                      hintText: 'Wapi-Guest',
                     ),
                   ),
                 ],
@@ -864,15 +961,11 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
           else if (_error != null)
             InfoCard(title: 'Backend issue', body: _error!)
           else ...[
-            const SectionHeader(
-              title: 'Ready Now',
-              subtitle: 'Active sessions waiting for attendance check-in.',
-            ),
+            const SectionHeader(title: 'Live'),
             if (activeSessions.isEmpty)
               const InfoCard(
-                title: 'No active sessions',
-                body:
-                    'Ask the lecturer to start a class session, then enter the live code here.',
+                title: 'No live sessions',
+                body: 'Ask the lecturer to start a class session.',
               )
             else
               ...activeSessions.map(
@@ -887,15 +980,11 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
                 ),
               ),
             const SizedBox(height: 8),
-            const SectionHeader(
-              title: 'Recent Sessions',
-              subtitle: 'Attendance result plus the latest lecture summary.',
-            ),
+            const SectionHeader(title: 'Recent'),
             if (recentSessions.isEmpty)
               const InfoCard(
                 title: 'No recent sessions',
-                body:
-                    'Completed lecture summaries will appear here once a session ends.',
+                body: 'Completed sessions will appear here.',
               )
             else
               ...recentSessions.map(
@@ -919,15 +1008,15 @@ class DashboardScaffold extends StatelessWidget {
     super.key,
     required this.user,
     required this.title,
-    required this.subtitle,
     required this.onRefresh,
     required this.onLogout,
     required this.child,
+    this.subtitle,
   });
 
   final AppUser user;
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final Future<void> Function({bool quiet}) onRefresh;
   final VoidCallback onLogout;
   final Widget child;
@@ -955,19 +1044,49 @@ class DashboardScaffold extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Signed in as ${user.name}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        user.name,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8D4C2),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        child: Text(
+                          user.isLecturer ? 'Lecturer' : 'Student',
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF7B4720),
+                              ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFF5D594E),
+                if ((subtitle ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFF5D594E),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -996,6 +1115,7 @@ class _CreateSessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -1003,24 +1123,49 @@ class _CreateSessionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Create a session',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              'Start Session',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Choose a unit and begin attendance.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFF6A625A),
+              ),
             ),
             const SizedBox(height: 14),
             DropdownButtonFormField<String>(
+              isExpanded: true,
               initialValue: selectedCourseId,
+              menuMaxHeight: 320,
               items: courses
                   .map(
                     (course) => DropdownMenuItem<String>(
                       value: course.id,
-                      child: Text('${course.code} - ${course.title}'),
+                      child: Text(
+                        '${course.code} - ${course.title}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )
+                  .toList(),
+              selectedItemBuilder: (context) => courses
+                  .map(
+                    (course) => Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '${course.code} - ${course.title}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   )
                   .toList(),
               onChanged: courses.isEmpty ? null : onCourseChanged,
-              decoration: const InputDecoration(labelText: 'Course'),
+              decoration: const InputDecoration(labelText: 'Unit'),
             ),
             const SizedBox(height: 14),
             TextField(
@@ -1031,7 +1176,10 @@ class _CreateSessionCard extends StatelessWidget {
             FilledButton.icon(
               onPressed: courses.isEmpty ? null : onCreatePressed,
               icon: const Icon(Icons.play_circle_fill),
-              label: const Text('Create & Start'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+              ),
+              label: const Text('Start Session'),
             ),
           ],
         ),
@@ -1080,6 +1228,7 @@ class LecturerSessionCard extends StatelessWidget {
     final countdown = session.attendanceClosesAt == null
         ? 'Attendance closed'
         : _timeRemainingLabel(session.attendanceClosesAt!);
+    final theme = Theme.of(context);
 
     return Card(
       child: Padding(
@@ -1089,9 +1238,9 @@ class LecturerSessionCard extends StatelessWidget {
           children: [
             Text(
               '${session.courseCode} - ${session.title}',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -1143,7 +1292,7 @@ class LecturerSessionCard extends StatelessWidget {
                     ),
                     title: Text(record.studentName),
                     subtitle: Text(
-                      '${record.studentEmail}${record.checkedInAt == null ? '' : ' • ${_formatDateTime(record.checkedInAt!)}'}',
+                      '${record.studentEmail}${record.checkedInAt == null ? '' : ' - ${_formatDateTime(record.checkedInAt!)}'}',
                     ),
                     trailing: PopupMenuButton<String>(
                       onSelected: (status) =>
@@ -1178,17 +1327,10 @@ class LecturerSessionCard extends StatelessWidget {
             ],
             const SizedBox(height: 6),
             Text(
-              'Lecture Capture',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Record on the phone and upload the audio for Groq transcription, or paste notes as a fallback.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF5D594E)),
+              'Lecture',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 12),
             if (recordedAudioName != null)
@@ -1239,9 +1381,8 @@ class LecturerSessionCard extends StatelessWidget {
               minLines: 5,
               maxLines: 8,
               decoration: const InputDecoration(
-                labelText: 'Paste transcript or lecture notes',
-                hintText:
-                    'For the demo, paste lecture notes here and generate the summary.',
+                labelText: 'Notes or transcript',
+                hintText: 'Paste notes if you are not uploading audio.',
               ),
             ),
             const SizedBox(height: 12),
@@ -1251,7 +1392,7 @@ class LecturerSessionCard extends StatelessWidget {
               children: [
                 FilledButton.tonal(
                   onPressed: onFillDemoTranscript,
-                  child: const Text('Load Demo Transcript'),
+                  child: const Text('Sample Notes'),
                 ),
                 FilledButton.icon(
                   onPressed: generatingLecture || isRecording
@@ -1259,7 +1400,7 @@ class LecturerSessionCard extends StatelessWidget {
                       : onGenerateLecture,
                   icon: const Icon(Icons.auto_awesome),
                   label: Text(
-                    generatingLecture ? 'Generating...' : 'Generate Summary',
+                    generatingLecture ? 'Generating...' : 'Summarize',
                   ),
                 ),
                 if (onEndSession != null)
@@ -1300,6 +1441,8 @@ class StudentActiveSessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final networkLabel = ssid.isEmpty ? 'Check in' : 'Check in via $ssid';
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -1335,7 +1478,7 @@ class StudentActiveSessionCard extends StatelessWidget {
               icon: const Icon(Icons.verified_user_outlined),
               label: Text(
                 session.attendanceStatus == 'absent'
-                    ? 'Check in via $ssid'
+                    ? networkLabel
                     : 'Attendance already submitted',
               ),
             ),
@@ -1425,9 +1568,8 @@ class LectureSummaryPanel extends StatelessWidget {
 
     if (lecture!.isProcessing) {
       return const InfoCard(
-        title: 'Lecture processing',
-        body:
-            'The summary job is running. Refresh in a few seconds to see the completed recap.',
+        title: 'Processing',
+        body: 'Summary is still running.',
       );
     }
 
@@ -1449,7 +1591,7 @@ class LectureSummaryPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'AI Lecture Summary',
+            'Summary',
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -1457,7 +1599,7 @@ class LectureSummaryPanel extends StatelessWidget {
           if (lecture!.sourceType == 'audio_upload') ...[
             const SizedBox(height: 6),
             Text(
-              'Generated from recorded audio upload.',
+              'From recorded audio',
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: const Color(0xFF5D594E)),
@@ -1491,7 +1633,7 @@ class LectureSummaryPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Action Items',
+            'Actions',
             style: Theme.of(
               context,
             ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
@@ -1520,10 +1662,10 @@ class LectureSummaryPanel extends StatelessWidget {
 }
 
 class SectionHeader extends StatelessWidget {
-  const SectionHeader({super.key, required this.title, required this.subtitle});
+  const SectionHeader({super.key, required this.title, this.subtitle});
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -1538,13 +1680,15 @@ class SectionHeader extends StatelessWidget {
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF5F594F)),
-          ),
+          if ((subtitle ?? '').isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle!,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF5F594F)),
+            ),
+          ],
         ],
       ),
     );

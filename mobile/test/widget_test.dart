@@ -6,6 +6,7 @@ void main() {
     await tester.pumpWidget(const AttendanceDemoApp());
 
     expect(find.text('RollCall Campus'), findsOneWidget);
-    expect(find.text('Sign in'), findsOneWidget);
+    expect(find.text('Sign In'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
   });
 }
