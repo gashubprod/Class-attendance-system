@@ -6,7 +6,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import 'api_client.dart';
-import 'demo_content.dart';
 import 'models.dart';
 
 void main() {
@@ -408,7 +407,6 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
     text: 'Today\'s lecture',
   );
   final Map<String, String> _recordedAudioPaths = {};
-  final Map<String, TextEditingController> _transcriptControllers = {};
   final Set<String> _uploadingSessions = {};
   String? _recordingSessionId;
   Timer? _refreshTimer;
@@ -435,17 +433,7 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
     _refreshTimer?.cancel();
     _audioRecorder.dispose();
     _titleController.dispose();
-    for (final controller in _transcriptControllers.values) {
-      controller.dispose();
-    }
     super.dispose();
-  }
-
-  TextEditingController _transcriptControllerFor(SessionSummary session) {
-    return _transcriptControllers.putIfAbsent(
-      session.id,
-      () => TextEditingController(),
-    );
   }
 
   Future<void> _loadDashboard({bool quiet = false}) async {
@@ -512,12 +500,16 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
         title: _titleController.text.trim(),
       );
       final started = await widget.apiClient.startSession(created.id);
-      showMessage('Session started. Current code: ${started.code ?? '--'}');
-      _transcriptControllerFor(started).text = demoTranscriptForSession(
-        started.courseCode,
-        started.title,
+      await _loadDashboard(quiet: true);
+      final recordingStarted = await _startAudioRecording(
+        started,
+        announce: false,
       );
-      await _loadDashboard();
+      if (recordingStarted) {
+        showMessage('Session started. Recording is live.');
+      } else {
+        showMessage('Session started. Start recording if needed.');
+      }
     } catch (error) {
       showMessage(error.toString());
     }
@@ -550,13 +542,6 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
     }
   }
 
-  void _fillDemoTranscript(SessionSummary session) {
-    _transcriptControllerFor(session).text = demoTranscriptForSession(
-      session.courseCode,
-      session.title,
-    );
-  }
-
   bool _isRecordingSession(SessionSummary session) =>
       _recordingSessionId == session.id;
 
@@ -569,21 +554,28 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
     return File(filePath).uri.pathSegments.last;
   }
 
-  Future<void> _startAudioRecording(SessionSummary session) async {
+  Future<bool> _startAudioRecording(
+    SessionSummary session, {
+    bool announce = true,
+  }) async {
     if (_recordingSessionId != null && _recordingSessionId != session.id) {
-      showMessage(
-        'Only one recording can run at a time. Stop the active recording first.',
-      );
-      return;
+      if (announce) {
+        showMessage(
+          'Only one recording can run at a time. Stop the active recording first.',
+        );
+      }
+      return false;
     }
 
     try {
       final hasPermission = await _audioRecorder.hasPermission();
       if (!hasPermission) {
-        showMessage(
-          'Microphone permission is required to record lecture audio.',
-        );
-        return;
+        if (announce) {
+          showMessage(
+            'Microphone permission is required to record lecture audio.',
+          );
+        }
+        return false;
       }
 
       final directory = await getTemporaryDirectory();
@@ -605,16 +597,22 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
       );
 
       if (!mounted) {
-        return;
+        return false;
       }
 
       setState(() {
         _recordingSessionId = session.id;
         _recordedAudioPaths.remove(session.id);
       });
-      showMessage('Recording started.');
+      if (announce) {
+        showMessage('Recording started.');
+      }
+      return true;
     } catch (error) {
-      showMessage(error.toString());
+      if (announce) {
+        showMessage(error.toString());
+      }
+      return false;
     }
   }
 
@@ -641,7 +639,12 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
         return;
       }
 
-      showMessage('Recording saved. Upload it to start transcription.');
+      showMessage('Recording stopped. Uploading audio...');
+      await _uploadAudioLecture(
+        session,
+        filePathOverride: filePath,
+        quietMessage: true,
+      );
     } catch (error) {
       if (mounted) {
         setState(() {
@@ -652,38 +655,12 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
     }
   }
 
-  Future<void> _generateLectureSummary(SessionSummary session) async {
-    final transcript = _transcriptControllerFor(session).text.trim();
-    if (transcript.isEmpty) {
-      showMessage('Add transcript text or load the demo transcript first.');
-      return;
-    }
-
-    setState(() {
-      _uploadingSessions.add(session.id);
-    });
-
-    try {
-      await widget.apiClient.createLecture(
-        sessionId: session.id,
-        transcriptText: transcript,
-        fileName: '${session.courseCode}-${session.title}.txt',
-      );
-      showMessage('Lecture processing started.');
-      await _loadDashboard(quiet: true);
-    } catch (error) {
-      showMessage(error.toString());
-    } finally {
-      if (mounted) {
-        setState(() {
-          _uploadingSessions.remove(session.id);
-        });
-      }
-    }
-  }
-
-  Future<void> _uploadAudioLecture(SessionSummary session) async {
-    final filePath = _recordedAudioPaths[session.id];
+  Future<void> _uploadAudioLecture(
+    SessionSummary session, {
+    String? filePathOverride,
+    bool quietMessage = false,
+  }) async {
+    final filePath = filePathOverride ?? _recordedAudioPaths[session.id];
     if (filePath == null || filePath.isEmpty) {
       showMessage('Record lecture audio first.');
       return;
@@ -697,9 +674,16 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
       await widget.apiClient.uploadLectureAudio(
         sessionId: session.id,
         filePath: filePath,
-        fileName: _recordedAudioNameFor(session),
+        fileName: filePathOverride == null ? _recordedAudioNameFor(session) : null,
       );
-      showMessage('Audio uploaded. Transcription and summary are running.');
+      if (mounted) {
+        setState(() {
+          _recordedAudioPaths.remove(session.id);
+        });
+      }
+      if (!quietMessage) {
+        showMessage('Audio uploaded. Summary is running.');
+      }
       await _loadDashboard(quiet: true);
     } catch (error) {
       showMessage(error.toString());
@@ -743,7 +727,6 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
           else if (_error != null)
             InfoCard(title: 'Backend issue', body: _error!)
           else ...[
-            const SectionHeader(title: 'Live'),
             if (activeSessions.isEmpty)
               const InfoCard(
                 title: 'No live sessions',
@@ -758,28 +741,20 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
                     session: session,
                     report: report,
                     lecture: _lecturesBySession[session.id],
-                    transcriptController: _transcriptControllerFor(session),
                     generatingLecture: _uploadingSessions.contains(session.id),
                     isRecording: _isRecordingSession(session),
                     recordedAudioName: _recordedAudioNameFor(session),
-                    onFillDemoTranscript: () => _fillDemoTranscript(session),
                     onStartRecording: () => _startAudioRecording(session),
                     onStopRecording: () => _stopAudioRecording(session),
                     onUploadAudio: () => _uploadAudioLecture(session),
-                    onGenerateLecture: () => _generateLectureSummary(session),
                     onEndSession: () => _endSession(session),
                     onOverrideAttendance: _overrideAttendance,
                   ),
                 );
               }),
-            const SizedBox(height: 8),
-            const SectionHeader(title: 'History'),
-            if (historySessions.isEmpty)
-              const InfoCard(
-                title: 'No history yet',
-                body: 'Ended sessions will appear here.',
-              )
-            else
+            if (historySessions.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              const SectionHeader(title: 'Past Sessions'),
               ...historySessions.map((session) {
                 final report = _reports[session.id];
                 return Padding(
@@ -788,19 +763,17 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
                     session: session,
                     report: report,
                     lecture: _lecturesBySession[session.id],
-                    transcriptController: _transcriptControllerFor(session),
                     generatingLecture: _uploadingSessions.contains(session.id),
                     isRecording: _isRecordingSession(session),
                     recordedAudioName: _recordedAudioNameFor(session),
-                    onFillDemoTranscript: () => _fillDemoTranscript(session),
                     onStartRecording: () => _startAudioRecording(session),
                     onStopRecording: () => _stopAudioRecording(session),
                     onUploadAudio: () => _uploadAudioLecture(session),
-                    onGenerateLecture: () => _generateLectureSummary(session),
                     onOverrideAttendance: _overrideAttendance,
                   ),
                 );
               }),
+            ],
           ],
         ],
       ),
@@ -1194,15 +1167,12 @@ class LecturerSessionCard extends StatelessWidget {
     required this.session,
     required this.report,
     required this.lecture,
-    required this.transcriptController,
     required this.generatingLecture,
     required this.isRecording,
     required this.recordedAudioName,
-    required this.onFillDemoTranscript,
     required this.onStartRecording,
     required this.onStopRecording,
     required this.onUploadAudio,
-    required this.onGenerateLecture,
     required this.onOverrideAttendance,
     this.onEndSession,
   });
@@ -1210,15 +1180,12 @@ class LecturerSessionCard extends StatelessWidget {
   final SessionSummary session;
   final SessionReport? report;
   final LectureRecord? lecture;
-  final TextEditingController transcriptController;
   final bool generatingLecture;
   final bool isRecording;
   final String? recordedAudioName;
-  final VoidCallback onFillDemoTranscript;
   final VoidCallback onStartRecording;
   final VoidCallback onStopRecording;
   final VoidCallback onUploadAudio;
-  final VoidCallback onGenerateLecture;
   final VoidCallback? onEndSession;
   final Future<void> Function(AttendanceRecord record, String status)
   onOverrideAttendance;
@@ -1229,6 +1196,19 @@ class LecturerSessionCard extends StatelessWidget {
         ? 'Attendance closed'
         : _timeRemainingLabel(session.attendanceClosesAt!);
     final theme = Theme.of(context);
+    final audioAlreadySubmitted =
+        lecture != null && lecture!.sourceType == 'audio_upload';
+    final canRetryUpload =
+        recordedAudioName != null && !isRecording && !audioAlreadySubmitted;
+    final audioActionLabel = generatingLecture
+        ? 'Uploading...'
+        : isRecording
+        ? 'Stop & Upload'
+        : canRetryUpload
+        ? 'Retry Upload'
+        : audioAlreadySubmitted
+        ? 'Audio Submitted'
+        : 'Start Recording';
 
     return Card(
       child: Padding(
@@ -1326,13 +1306,7 @@ class LecturerSessionCard extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 6),
-            Text(
-              'Lecture',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             if (recordedAudioName != null)
               Container(
                 width: double.infinity,
@@ -1344,7 +1318,7 @@ class LecturerSessionCard extends StatelessWidget {
                 child: Text(
                   isRecording
                       ? 'Recording in progress...'
-                      : 'Ready audio: $recordedAudioName',
+                      : 'Pending upload: $recordedAudioName',
                 ),
               ),
             if (recordedAudioName != null) const SizedBox(height: 12),
@@ -1353,55 +1327,24 @@ class LecturerSessionCard extends StatelessWidget {
               runSpacing: 12,
               children: [
                 FilledButton.tonalIcon(
-                  onPressed: generatingLecture
+                  onPressed:
+                      generatingLecture || audioAlreadySubmitted
                       ? null
                       : isRecording
                       ? onStopRecording
+                      : canRetryUpload
+                      ? onUploadAudio
                       : onStartRecording,
-                  icon: Icon(isRecording ? Icons.stop_circle : Icons.mic),
-                  label: Text(isRecording ? 'Stop Recording' : 'Record Audio'),
-                ),
-                FilledButton.icon(
-                  onPressed:
-                      generatingLecture ||
-                          isRecording ||
-                          recordedAudioName == null
-                      ? null
-                      : onUploadAudio,
-                  icon: const Icon(Icons.cloud_upload_outlined),
-                  label: Text(
-                    generatingLecture ? 'Uploading...' : 'Upload Audio',
+                  icon: Icon(
+                    isRecording
+                        ? Icons.stop_circle
+                        : canRetryUpload
+                        ? Icons.cloud_upload_outlined
+                        : audioAlreadySubmitted
+                        ? Icons.check_circle_outline
+                        : Icons.mic,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: transcriptController,
-              minLines: 5,
-              maxLines: 8,
-              decoration: const InputDecoration(
-                labelText: 'Notes or transcript',
-                hintText: 'Paste notes if you are not uploading audio.',
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                FilledButton.tonal(
-                  onPressed: onFillDemoTranscript,
-                  child: const Text('Sample Notes'),
-                ),
-                FilledButton.icon(
-                  onPressed: generatingLecture || isRecording
-                      ? null
-                      : onGenerateLecture,
-                  icon: const Icon(Icons.auto_awesome),
-                  label: Text(
-                    generatingLecture ? 'Generating...' : 'Summarize',
-                  ),
+                  label: Text(audioActionLabel),
                 ),
                 if (onEndSession != null)
                   FilledButton.tonalIcon(
@@ -1414,9 +1357,8 @@ class LecturerSessionCard extends StatelessWidget {
             const SizedBox(height: 18),
             LectureSummaryPanel(
               lecture: lecture,
-              emptyTitle: 'No lecture summary yet',
-              emptyBody:
-                  'Generate a lecture summary to give students a recap and action items.',
+              emptyTitle: 'No summary yet',
+              emptyBody: 'Start a session and stop the recording to generate one.',
             ),
           ],
         ),

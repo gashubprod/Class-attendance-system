@@ -192,6 +192,8 @@ async function seedDemoData() {
   const studentBId = 'usr_demo_student_b';
   const studentCId = 'usr_demo_student_c';
   const courseId = 'crs_demo_mobile';
+  const courseDistributedId = 'crs_demo_distributed';
+  const courseSecurityId = 'crs_demo_security';
   const passwordHash = hashPassword('demo1234');
 
   await pool.query(
@@ -214,22 +216,35 @@ async function seedDemoData() {
   await pool.query(
     `
       INSERT INTO courses (id, code, title, lecturer_id)
-      VALUES ($1, 'CSM 301', 'Mobile Systems and Attendance', $2)
+      VALUES
+        ($1, 'CSM 301', 'Mobile Systems and Attendance', $4),
+        ($2, 'CSM 305', 'Distributed Systems', $4),
+        ($3, 'CSM 315', 'Secure Application Engineering', $4)
       ON CONFLICT (id) DO UPDATE
         SET code = EXCLUDED.code,
             title = EXCLUDED.title,
             lecturer_id = EXCLUDED.lecturer_id
     `,
-    [courseId, lecturerId],
+    [courseId, courseDistributedId, courseSecurityId, lecturerId],
   );
 
   await pool.query(
     `
       INSERT INTO enrollments (course_id, student_id)
-      VALUES ($1, $2), ($1, $3), ($1, $4)
+      VALUES
+        ($1, $4), ($1, $5), ($1, $6),
+        ($2, $4), ($2, $5), ($2, $6),
+        ($3, $4), ($3, $5), ($3, $6)
       ON CONFLICT (course_id, student_id) DO NOTHING
     `,
-    [courseId, studentAId, studentBId, studentCId],
+    [
+      courseId,
+      courseDistributedId,
+      courseSecurityId,
+      studentAId,
+      studentBId,
+      studentCId,
+    ],
   );
 
   await seedCompletedDemoSession({
