@@ -247,6 +247,8 @@ async function seedDemoData() {
     ],
   );
 
+  await pool.query(`DELETE FROM sessions WHERE id = 'ses_demo_completed'`);
+
 }
 
 async function seedCompletedDemoSession({
