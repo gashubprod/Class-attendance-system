@@ -13,6 +13,110 @@ void main() {
 }
 
 const appApiBaseUrl = 'https://class-attendance-demo-api.onrender.com';
+const appExpectedWifiSsid = 'Wapi-Guest';
+const appCanvasColor = Color(0xFFF4F1EA);
+const appSurfaceColor = Color(0xFFFFFCF7);
+const appMutedSurfaceColor = Color(0xFFF0EBE2);
+const appBorderColor = Color(0xFFD9D2C6);
+const appTextColor = Color(0xFF16191C);
+const appMutedTextColor = Color(0xFF6B6A63);
+const appAccentColor = Color(0xFF18382F);
+const appAccentSoftColor = Color(0xFFE5ECE8);
+const appBronzeColor = Color(0xFF8A6A43);
+const appShadowColor = Color(0x120F1419);
+
+ThemeData buildAppTheme() {
+  final base = ThemeData(
+    useMaterial3: true,
+    colorScheme: const ColorScheme.light(
+      primary: appAccentColor,
+      secondary: appBronzeColor,
+      surface: appSurfaceColor,
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
+      onSurface: appTextColor,
+      error: Color(0xFF9E3B2F),
+      onError: Colors.white,
+    ),
+  );
+
+  return base.copyWith(
+    scaffoldBackgroundColor: appCanvasColor,
+    splashColor: appAccentColor.withValues(alpha: 0.06),
+    highlightColor: Colors.transparent,
+    dividerColor: appBorderColor,
+    textTheme: base.textTheme.apply(
+      bodyColor: appTextColor,
+      displayColor: appTextColor,
+    ),
+    cardTheme: CardThemeData(
+      color: appSurfaceColor,
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: const BorderSide(color: appBorderColor),
+      ),
+      shadowColor: appShadowColor,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      foregroundColor: appTextColor,
+      elevation: 0,
+    ),
+    iconTheme: const IconThemeData(color: appTextColor),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: appMutedSurfaceColor,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      labelStyle: const TextStyle(color: appMutedTextColor),
+      hintStyle: const TextStyle(color: appMutedTextColor),
+      prefixIconColor: appMutedTextColor,
+      suffixIconColor: appMutedTextColor,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: const BorderSide(color: appBorderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: const BorderSide(color: appAccentColor, width: 1.2),
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(56),
+        backgroundColor: appAccentColor,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(52),
+        foregroundColor: appTextColor,
+        side: const BorderSide(color: appBorderColor),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: appTextColor,
+      contentTextStyle: const TextStyle(color: Colors.white),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+    ),
+  );
+}
 
 class AttendanceDemoApp extends StatefulWidget {
   const AttendanceDemoApp({super.key});
@@ -47,29 +151,7 @@ class _AttendanceDemoAppState extends State<AttendanceDemoApp> {
     return MaterialApp(
       title: 'RollCall Campus',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF9E4D1A),
-          brightness: Brightness.light,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF3EDE3),
-        cardTheme: CardThemeData(
-          color: Colors.white.withValues(alpha: 0.88),
-          elevation: 0,
-          margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
+      theme: buildAppTheme(),
       home: _user == null
           ? LoginScreen(onLogin: _login)
           : _user!.isLecturer
@@ -153,217 +235,163 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF4ECE2),
+      backgroundColor: appCanvasColor,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: DecoratedBox(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF8F5327), Color(0xFFC9834A)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: appSurfaceColor,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: appBorderColor),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: appShadowColor,
+                          blurRadius: 26,
+                          offset: Offset(0, 18),
                         ),
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(36),
-                          bottomRight: Radius.circular(36),
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 22, 24, 28),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 64,
-                              height: 64,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(22),
-                              ),
-                              child: const Icon(
-                                Icons.verified_user_rounded,
-                                color: Colors.white,
-                                size: 34,
-                              ),
-                            ),
-                            const SizedBox(height: 22),
-                            Text(
-                              'RollCall Campus',
-                              style: theme.textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: -0.4,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Attendance, lecture capture, and class summaries in one mobile workflow.',
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                height: 1.35,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 420),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x18000000),
-                              blurRadius: 24,
-                              offset: Offset(0, 14),
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Padding(
+                      padding: const EdgeInsets.all(26),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Text(
-                                'Welcome back',
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: const Color(0xFF2F241A),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Sign in with your campus account to continue.',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: const Color(0xFF776B5D),
-                                  height: 1.35,
-                                ),
-                              ),
-                              const SizedBox(height: 22),
-                              TextField(
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                decoration: const InputDecoration(
-                                  labelText: 'Email',
-                                  hintText: 'lecturer@campus.local',
-                                  prefixIcon: Icon(Icons.alternate_email),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextField(
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                onSubmitted: (_) => _busy ? null : _submit(),
-                                decoration: InputDecoration(
-                                  labelText: 'Password',
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              if (_error != null) ...[
-                                const SizedBox(height: 14),
-                                Text(
-                                  _error!,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: theme.colorScheme.error,
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: 22),
-                              FilledButton(
-                                onPressed: _busy ? null : _submit,
-                                style: FilledButton.styleFrom(
-                                  minimumSize: const Size.fromHeight(56),
-                                  backgroundColor: const Color(0xFF8F5327),
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: Text(
-                                  _busy ? 'Signing in...' : 'Sign In',
-                                ),
-                              ),
-                              const SizedBox(height: 22),
                               Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(16),
+                                width: 52,
+                                height: 52,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF6EFE8),
-                                  borderRadius: BorderRadius.circular(22),
+                                  color: appAccentSoftColor,
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
+                                child: const Icon(
+                                  Icons.verified_user_rounded,
+                                  color: appAccentColor,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Quick demo access',
-                                      style: theme.textTheme.titleSmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                            color: const Color(0xFF2F241A),
-                                          ),
+                                      'RollCall Campus',
+                                      style: theme.textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: -0.4,
+                                      ),
                                     ),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 4),
                                     Text(
-                                      'Prefill a seeded account, then tap Sign In.',
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(
-                                            color: const Color(0xFF776B5D),
-                                          ),
-                                    ),
-                                    const SizedBox(height: 14),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: OutlinedButton.icon(
-                                            onPressed: () =>
-                                                _fillDemo('lecturer'),
-                                            icon: const Icon(
-                                              Icons.school_outlined,
-                                            ),
-                                            label: const Text('Lecturer'),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: OutlinedButton.icon(
-                                            onPressed: () =>
-                                                _fillDemo('student'),
-                                            icon: const Icon(
-                                              Icons.badge_outlined,
-                                            ),
-                                            label: const Text('Student'),
-                                          ),
-                                        ),
-                                      ],
+                                      'Attendance and lecture notes',
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: appMutedTextColor,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
                             ],
                           ),
-                        ),
+                          const SizedBox(height: 28),
+                          Text(
+                            'Sign in',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.6,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Use your seeded campus account.',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: appMutedTextColor,
+                            ),
+                          ),
+                          const SizedBox(height: 22),
+                          TextField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              hintText: 'lecturer@campus.local',
+                              prefixIcon: Icon(Icons.alternate_email),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          TextField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            onSubmitted: (_) => _busy ? null : _submit(),
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: const Icon(Icons.lock_outline),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (_error != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              _error!,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.error,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 20),
+                          FilledButton(
+                            onPressed: _busy ? null : _submit,
+                            child: Text(_busy ? 'Signing in...' : 'Sign In'),
+                          ),
+                          const SizedBox(height: 22),
+                          Text(
+                            'Demo access',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: appMutedTextColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _fillDemo('lecturer'),
+                                  icon: const Icon(Icons.school_outlined),
+                                  label: const Text('Lecturer'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _fillDemo('student'),
+                                  icon: const Icon(Icons.badge_outlined),
+                                  label: const Text('Student'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -711,6 +739,7 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
     return DashboardScaffold(
       user: widget.user,
       title: 'Lecturer',
+      subtitle: currentSession == null ? 'Ready to start the next class' : 'Session in progress',
       onRefresh: _loadDashboard,
       onLogout: widget.onLogout,
       onOpenHistory: () {
@@ -741,7 +770,37 @@ class _LecturerHomePageState extends DashboardPage<LecturerHomePage> {
                 onCourseChanged: (value) =>
                     setState(() => _selectedCourseId = value),
                 onCreatePressed: _createAndStartSession,
-              )
+              ),
+              if (historySessions.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                const SectionHeader(
+                  title: 'Recent',
+                  subtitle: 'Past sessions and generated notes',
+                ),
+                ...historySessions.take(3).map(
+                  (session) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: SessionHistoryTile(
+                      session: session,
+                      lecture: _lecturesBySession[session.id],
+                      meta: _lecturerHistoryMeta(_reports[session.id]),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (context) => LecturerSessionDetailsPage(
+                              session: session,
+                              report: _reports[session.id],
+                              lecture: _lecturesBySession[session.id],
+                              allowAttendanceOverrides: false,
+                              onOverrideAttendance: (record, status) async {},
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ] else
               LecturerCurrentSessionCard(
                 session: currentSession,
@@ -791,9 +850,6 @@ class StudentHomePage extends StatefulWidget {
 }
 
 class _StudentHomePageState extends DashboardPage<StudentHomePage> {
-  final TextEditingController _ssidController = TextEditingController(
-    text: 'Wapi-Guest',
-  );
   final Map<String, TextEditingController> _codeControllers = {};
   Timer? _refreshTimer;
   bool _busy = true;
@@ -814,7 +870,6 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
   @override
   void dispose() {
     _refreshTimer?.cancel();
-    _ssidController.dispose();
     for (final controller in _codeControllers.values) {
       controller.dispose();
     }
@@ -871,7 +926,7 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
       final status = await widget.apiClient.checkIn(
         sessionId: session.id,
         code: _codeControllerFor(session.id).text.trim(),
-        ssid: _ssidController.text.trim(),
+        ssid: appExpectedWifiSsid,
       );
       showMessage('Attendance submitted as $status.');
       await _loadDashboard();
@@ -895,6 +950,7 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
     return DashboardScaffold(
       user: widget.user,
       title: 'Student',
+      subtitle: currentSession == null ? 'Waiting for a live class' : 'Ready to check in',
       onRefresh: _loadDashboard,
       onLogout: widget.onLogout,
       onOpenHistory: () {
@@ -911,31 +967,8 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Network',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _ssidController,
-                    decoration: const InputDecoration(
-                      labelText: 'Wi-Fi name',
-                      hintText: 'Wapi-Guest',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
+          _NetworkBanner(ssid: appExpectedWifiSsid),
+          const SizedBox(height: 18),
           if (_busy)
             const Center(child: CircularProgressIndicator())
           else if (_error != null)
@@ -943,9 +976,41 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
           else ...[
             const SectionHeader(title: 'Current Session'),
             if (currentSession == null)
-              const InfoCard(
-                title: 'No live sessions',
-                body: 'Ask the lecturer to start a class session.',
+              Column(
+                children: [
+                  const InfoCard(
+                    icon: Icons.event_busy_outlined,
+                    title: 'No live session',
+                    body: 'Attendance opens here when your lecturer starts class.',
+                  ),
+                  if (historySessions.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    const SectionHeader(
+                      title: 'Recent',
+                      subtitle: 'Attendance records and lecture notes',
+                    ),
+                    ...historySessions.take(3).map(
+                      (session) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: SessionHistoryTile(
+                          session: session,
+                          lecture: _lecturesBySession[session.id],
+                          meta: session.attendanceStatus ?? 'Absent',
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (context) => StudentSessionDetailsPage(
+                                  session: session,
+                                  lecture: _lecturesBySession[session.id],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               )
             else
               Padding(
@@ -953,7 +1018,7 @@ class _StudentHomePageState extends DashboardPage<StudentHomePage> {
                 child: StudentActiveSessionCard(
                   session: currentSession,
                   codeController: _codeControllerFor(currentSession.id),
-                  ssid: _ssidController.text.trim(),
+                  ssid: appExpectedWifiSsid,
                   onCheckIn: () => _checkIn(currentSession),
                 ),
               ),
@@ -987,80 +1052,122 @@ class DashboardScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () => onRefresh(quiet: false),
-            icon: const Icon(Icons.refresh),
-          ),
-          if (onOpenHistory != null)
-            IconButton(
-              onPressed: onOpenHistory,
-              icon: const Icon(Icons.history),
-            ),
-          IconButton(onPressed: onLogout, icon: const Icon(Icons.logout)),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        user.name,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8D4C2),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        child: Text(
-                          user.isLecturer ? 'Lecturer' : 'Student',
-                          style: Theme.of(context).textTheme.labelMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF7B4720),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.6,
+                                  ),
+                            ),
+                            if ((subtitle ?? '').isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                subtitle!,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: appMutedTextColor),
                               ),
+                            ],
+                          ],
                         ),
                       ),
+                      _HeaderActionButton(
+                        icon: Icons.refresh,
+                        onTap: () => onRefresh(quiet: false),
+                      ),
+                      if (onOpenHistory != null) ...[
+                        const SizedBox(width: 8),
+                        _HeaderActionButton(
+                          icon: Icons.history,
+                          onTap: onOpenHistory!,
+                        ),
+                      ],
+                      const SizedBox(width: 8),
+                      _HeaderActionButton(
+                        icon: Icons.logout,
+                        onTap: onLogout,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: appSurfaceColor,
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(color: appBorderColor),
                     ),
-                  ],
-                ),
-                if ((subtitle ?? '').isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF5D594E),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: user.isLecturer
+                                ? appAccentSoftColor
+                                : const Color(0xFFE8ECEF),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Icon(
+                            user.isLecturer
+                                ? Icons.school_outlined
+                                : Icons.badge_outlined,
+                            color: user.isLecturer
+                                ? appAccentColor
+                                : const Color(0xFF375468),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                user.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                user.email,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: appMutedTextColor),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _RoleChip(
+                          label: user.isLecturer ? 'Lecturer' : 'Student',
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Expanded(child: child),
-        ],
+            const SizedBox(height: 18),
+            Expanded(child: child),
+          ],
+        ),
       ),
     );
   }
@@ -1086,24 +1193,49 @@ class _CreateSessionCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Start Session',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: appAccentSoftColor,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(
+                    Icons.play_circle_outline,
+                    color: appAccentColor,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Start a live session',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Choose a course and open attendance.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: appMutedTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Choose a unit and begin attendance.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFF6A625A),
-              ),
-            ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 20),
             DropdownButtonFormField<String>(
               isExpanded: true,
               initialValue: selectedCourseId,
@@ -1135,19 +1267,16 @@ class _CreateSessionCard extends StatelessWidget {
               onChanged: courses.isEmpty ? null : onCourseChanged,
               decoration: const InputDecoration(labelText: 'Unit'),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             TextField(
               controller: titleController,
               decoration: const InputDecoration(labelText: 'Session title'),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 18),
             FilledButton.icon(
               onPressed: courses.isEmpty ? null : onCreatePressed,
               icon: const Icon(Icons.play_circle_fill),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-              ),
-              label: const Text('Start Session'),
+              label: const Text('Start Live Session'),
             ),
           ],
         ),
@@ -1206,32 +1335,113 @@ class LecturerCurrentSessionCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '${session.courseCode} - ${session.title}',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                StatusPill(label: session.status, status: session.status),
-                StatusPill(
-                  label: 'Code ${session.code ?? '--'}',
-                  status: 'present',
-                ),
-                StatusPill(label: countdown, status: 'late'),
-                if (lecture != null)
-                  StatusPill(
-                    label: 'Lecture ${lecture!.status}',
-                    status: lecture!.status,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        session.courseCode,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: appMutedTextColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        session.title,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.7,
+                            ),
+                      ),
+                    ],
                   ),
+                ),
+                const SizedBox(width: 12),
+                StatusPill(label: 'Live', status: session.status),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: appTextColor,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Live code',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.72),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    session.code ?? '--',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.timer_outlined,
+                        size: 18,
+                        color: Colors.white70,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        countdown,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.84),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: MetricTile(
+                    label: 'Present',
+                    value: '${counts['present'] ?? 0}',
+                    tone: 'present',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: MetricTile(
+                    label: 'Late',
+                    value: '${counts['late'] ?? 0}',
+                    tone: 'late',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: MetricTile(
+                    label: 'Absent',
+                    value: '${counts['absent'] ?? 0}',
+                    tone: 'absent',
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -1239,33 +1449,33 @@ class LecturerCurrentSessionCard extends StatelessWidget {
               spacing: 10,
               runSpacing: 10,
               children: [
-                StatusPill(
-                  label: 'present: ${counts['present'] ?? 0}',
-                  status: 'present',
-                ),
-                StatusPill(
-                  label: 'late: ${counts['late'] ?? 0}',
-                  status: 'late',
-                ),
-                StatusPill(
-                  label: 'absent: ${counts['absent'] ?? 0}',
-                  status: 'absent',
-                ),
+                if (lecture != null)
+                  StatusPill(
+                    label: 'Notes ${lecture!.status}',
+                    status: lecture!.status,
+                  ),
+                if (isRecording) const StatusPill(label: 'Recording', status: 'processing'),
+                if (recordedAudioName != null && !isRecording)
+                  const StatusPill(label: 'Audio ready', status: 'pending'),
               ],
             ),
             if (recordedAudioName != null) ...[
               const SizedBox(height: 16),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF9F5EF),
-                  borderRadius: BorderRadius.circular(18),
+                  color: appMutedSurfaceColor,
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   isRecording
                       ? 'Recording in progress...'
                       : 'Pending upload: $recordedAudioName',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: appMutedTextColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -1274,7 +1484,7 @@ class LecturerCurrentSessionCard extends StatelessWidget {
               spacing: 12,
               runSpacing: 12,
               children: [
-                FilledButton.tonalIcon(
+                FilledButton.icon(
                   onPressed:
                       generatingLecture || audioAlreadySubmitted
                       ? null
@@ -1294,12 +1504,12 @@ class LecturerCurrentSessionCard extends StatelessWidget {
                   ),
                   label: Text(audioActionLabel),
                 ),
-                FilledButton.tonalIcon(
+                OutlinedButton.icon(
                   onPressed: onOpenDetails,
                   icon: const Icon(Icons.visibility_outlined),
                   label: const Text('Details'),
                 ),
-                FilledButton.tonalIcon(
+                OutlinedButton.icon(
                   onPressed: onEndSession,
                   icon: const Icon(Icons.stop_circle_outlined),
                   label: const Text('End Session'),
@@ -1320,6 +1530,7 @@ class LecturerSessionDetailsPage extends StatelessWidget {
     required this.report,
     required this.lecture,
     required this.onOverrideAttendance,
+    this.allowAttendanceOverrides = true,
   });
 
   final SessionSummary session;
@@ -1327,12 +1538,14 @@ class LecturerSessionDetailsPage extends StatelessWidget {
   final LectureRecord? lecture;
   final Future<void> Function(AttendanceRecord record, String status)
   onOverrideAttendance;
+  final bool allowAttendanceOverrides;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Session Details')),
-      body: ListView(
+    return _SubPageScaffold(
+      title: session.courseCode,
+      subtitle: 'Attendance report and lecture notes',
+      child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           LecturerSessionCard(
@@ -1343,7 +1556,7 @@ class LecturerSessionDetailsPage extends StatelessWidget {
             isRecording: false,
             recordedAudioName: null,
             showLectureControls: false,
-            allowAttendanceOverrides: true,
+            allowAttendanceOverrides: allowAttendanceOverrides,
             onStartRecording: () {},
             onStopRecording: () {},
             onUploadAudio: () {},
@@ -1410,25 +1623,47 @@ class LecturerSessionCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '${session.courseCode} - ${session.title}',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        session.courseCode,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: appMutedTextColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        session.title,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                StatusPill(label: session.status, status: session.status),
+              ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 18),
             Wrap(
               spacing: 12,
               runSpacing: 12,
               children: [
-                StatusPill(label: session.status, status: session.status),
                 if (session.isActive)
                   StatusPill(
-                    label: 'Live code ${session.code ?? '--'}',
+                    label: 'Code ${session.code ?? '--'}',
                     status: 'present',
                   ),
                 if (session.isActive)
@@ -1445,86 +1680,81 @@ class LecturerSessionCard extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 18),
             if (report != null) ...[
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: report!.counts.entries
-                    .map(
-                      (entry) => StatusPill(
-                        label: '${entry.key}: ${entry.value}',
-                        status: entry.key,
-                      ),
-                    )
-                    .toList(),
-              ),
               const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: MetricTile(
+                      label: 'Present',
+                      value: '${report!.counts['present'] ?? 0}',
+                      tone: 'present',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: MetricTile(
+                      label: 'Late',
+                      value: '${report!.counts['late'] ?? 0}',
+                      tone: 'late',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: MetricTile(
+                      label: 'Absent',
+                      value: '${report!.counts['absent'] ?? 0}',
+                      tone: 'absent',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (report != null) ...[
+              const SizedBox(height: 22),
+              Text(
+                'Attendance',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 12),
               ...report!.records.map(
                 (record) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    tileColor: const Color(0xFFF9F5EF),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    title: Text(record.studentName),
-                    subtitle: Text(
-                      '${record.studentEmail}${record.checkedInAt == null ? '' : ' - ${_formatDateTime(record.checkedInAt!)}'}',
-                    ),
-                    trailing: allowAttendanceOverrides
-                        ? PopupMenuButton<String>(
-                            onSelected: (status) =>
-                                onOverrideAttendance(record, status),
-                            itemBuilder: (context) => const [
-                              PopupMenuItem(
-                                value: 'present',
-                                child: Text('Mark present'),
-                              ),
-                              PopupMenuItem(
-                                value: 'late',
-                                child: Text('Mark late'),
-                              ),
-                              PopupMenuItem(
-                                value: 'absent',
-                                child: Text('Mark absent'),
-                              ),
-                              PopupMenuItem(
-                                value: 'excused',
-                                child: Text('Mark excused'),
-                              ),
-                              PopupMenuItem(
-                                value: 'invalid',
-                                child: Text('Mark invalid'),
-                              ),
-                            ],
-                            child: StatusPill(
-                              label: record.status,
-                              status: record.status,
-                            ),
-                          )
-                        : StatusPill(
-                            label: record.status,
-                            status: record.status,
-                          ),
+                  child: _AttendanceRecordTile(
+                    record: record,
+                    allowOverrides: allowAttendanceOverrides,
+                    onOverrideAttendance: onOverrideAttendance,
                   ),
                 ),
               ),
             ],
             if (showLectureControls) ...[
               const SizedBox(height: 10),
+              Text(
+                'Lecture Capture',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 12),
               if (recordedAudioName != null)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF9F5EF),
-                    borderRadius: BorderRadius.circular(18),
+                    color: appMutedSurfaceColor,
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     isRecording
                         ? 'Recording in progress...'
                         : 'Pending upload: $recordedAudioName',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: appMutedTextColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               if (recordedAudioName != null) const SizedBox(height: 12),
@@ -1532,7 +1762,7 @@ class LecturerSessionCard extends StatelessWidget {
                 spacing: 12,
                 runSpacing: 12,
                 children: [
-                  FilledButton.tonalIcon(
+                  FilledButton.icon(
                     onPressed:
                         generatingLecture || audioAlreadySubmitted
                         ? null
@@ -1547,13 +1777,13 @@ class LecturerSessionCard extends StatelessWidget {
                           : canRetryUpload
                           ? Icons.cloud_upload_outlined
                           : audioAlreadySubmitted
-                          ? Icons.check_circle_outline
-                          : Icons.mic,
+                        ? Icons.check_circle_outline
+                        : Icons.mic,
                     ),
                     label: Text(audioActionLabel),
                   ),
                   if (onEndSession != null)
-                    FilledButton.tonalIcon(
+                    OutlinedButton.icon(
                       onPressed: onEndSession,
                       icon: const Icon(Icons.stop_circle_outlined),
                       label: const Text('End Session'),
@@ -1590,47 +1820,146 @@ class StudentActiveSessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final networkLabel = ssid.isEmpty ? 'Check in' : 'Check in via $ssid';
+    final checkedIn = session.attendanceStatus != null &&
+        session.attendanceStatus != 'absent';
+    final countdown = session.attendanceClosesAt == null
+        ? 'Attendance closed'
+        : _timeRemainingLabel(session.attendanceClosesAt!);
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '${session.courseCode} - ${session.courseTitle}',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        session.courseCode,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: appMutedTextColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        session.courseTitle,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                StatusPill(
+                  label: checkedIn
+                      ? (session.attendanceStatus ?? 'Submitted')
+                      : 'Live',
+                  status: checkedIn
+                      ? (session.attendanceStatus ?? 'present')
+                      : 'active',
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(session.title),
-            const SizedBox(height: 12),
-            StatusPill(
-              label: 'Status ${session.attendanceStatus ?? 'absent'}',
-              status: session.attendanceStatus ?? 'absent',
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: codeController,
-              decoration: const InputDecoration(
-                labelText: 'Lecturer code',
-                hintText: 'Enter the 6-digit live code',
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: appMutedSurfaceColor,
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.wifi_tethering, color: appAccentColor),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      ssid,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    countdown,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: appMutedTextColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 14),
-            FilledButton.icon(
-              onPressed: session.attendanceStatus == 'absent'
-                  ? onCheckIn
-                  : null,
-              icon: const Icon(Icons.verified_user_outlined),
-              label: Text(
-                session.attendanceStatus == 'absent'
-                    ? networkLabel
-                    : 'Attendance already submitted',
+            const SizedBox(height: 18),
+            if (checkedIn)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: appAccentSoftColor,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: appAccentColor,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Checked in',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                      ],
+                    ),
+                    if (session.checkedInAt != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _formatDateTime(session.checkedInAt!),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: appMutedTextColor,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              )
+            else ...[
+              TextField(
+                controller: codeController,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 4,
+                ),
+                maxLength: 6,
+                decoration: const InputDecoration(
+                  labelText: 'Live code',
+                  hintText: 'Enter the 6-digit code',
+                  counterText: '',
+                ),
               ),
-            ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: onCheckIn,
+                icon: const Icon(Icons.verified_user_outlined),
+                label: const Text('Check In'),
+              ),
+            ],
           ],
         ),
       ),
@@ -1652,25 +1981,45 @@ class StudentHistorySessionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '${session.courseCode} - ${session.title}',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
+            Row(
               children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        session.courseCode,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: appMutedTextColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        session.title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 StatusPill(
                   label: session.attendanceStatus ?? 'absent',
                   status: session.attendanceStatus ?? 'absent',
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
                 if (session.endedAt != null)
                   StatusPill(
                     label: _formatDateTime(session.endedAt!),
@@ -1678,10 +2027,40 @@ class StudentHistorySessionCard extends StatelessWidget {
                   ),
                 if (lecture != null)
                   StatusPill(
-                    label: 'Lecture ${lecture!.status}',
+                    label: 'Notes ${lecture!.status}',
                     status: lecture!.status,
                   ),
               ],
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: appMutedSurfaceColor,
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.verified_user_outlined,
+                    color: appAccentColor,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      session.attendanceStatus == null ||
+                              session.attendanceStatus == 'absent'
+                          ? 'No attendance submitted'
+                          : 'Attendance recorded as ${session.attendanceStatus}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: appMutedTextColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 18),
             LectureSummaryPanel(
@@ -1713,33 +2092,39 @@ class LecturerHistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('History')),
-      body: ListView(
+    return _SubPageScaffold(
+      title: 'History',
+      subtitle: 'Past sessions, attendance, and generated notes',
+      child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           if (sessions.isEmpty)
             const InfoCard(
+              icon: Icons.history_toggle_off,
               title: 'No history yet',
-              body: 'Older sessions will appear here.',
+              body: 'Completed sessions will appear here.',
             )
           else
             ...sessions.map(
               (session) => Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: LecturerSessionCard(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: SessionHistoryTile(
                   session: session,
-                  report: reports[session.id],
                   lecture: lecturesBySession[session.id],
-                  generatingLecture: false,
-                  isRecording: false,
-                  recordedAudioName: null,
-                  showLectureControls: false,
-                  allowAttendanceOverrides: false,
-                  onStartRecording: () {},
-                  onStopRecording: () {},
-                  onUploadAudio: () {},
-                  onOverrideAttendance: (record, status) async {},
+                  meta: _lecturerHistoryMeta(reports[session.id]),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => LecturerSessionDetailsPage(
+                          session: session,
+                          report: reports[session.id],
+                          lecture: lecturesBySession[session.id],
+                          allowAttendanceOverrides: false,
+                          onOverrideAttendance: (record, status) async {},
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -1763,26 +2148,64 @@ class StudentHistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('History')),
-      body: ListView(
+    return _SubPageScaffold(
+      title: 'History',
+      subtitle: 'Attendance records and lecture notes',
+      child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           if (sessions.isEmpty)
             const InfoCard(
+              icon: Icons.history_toggle_off,
               title: 'No history yet',
-              body: 'Older sessions will appear here.',
+              body: 'Completed classes will appear here.',
             )
           else
             ...sessions.map(
               (session) => Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: StudentHistorySessionCard(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: SessionHistoryTile(
                   session: session,
                   lecture: lecturesBySession[session.id],
+                  meta: session.attendanceStatus ?? 'Absent',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => StudentSessionDetailsPage(
+                          session: session,
+                          lecture: lecturesBySession[session.id],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class StudentSessionDetailsPage extends StatelessWidget {
+  const StudentSessionDetailsPage({
+    super.key,
+    required this.session,
+    required this.lecture,
+  });
+
+  final SessionSummary session;
+  final LectureRecord? lecture;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SubPageScaffold(
+      title: session.courseCode,
+      subtitle: 'Attendance status and lecture notes',
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          StudentHistorySessionCard(session: session, lecture: lecture),
         ],
       ),
     );
@@ -1823,79 +2246,114 @@ class LectureSummaryPanel extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F5EF),
-        borderRadius: BorderRadius.circular(20),
+        color: appMutedSurfaceColor,
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Summary',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          Row(
+            children: [
+              Text(
+                'Notes',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              const SizedBox(width: 10),
+              if (lecture!.sourceType == 'audio_upload')
+                const StatusPill(label: 'Audio', status: 'processing'),
+            ],
           ),
-          if (lecture!.sourceType == 'audio_upload') ...[
-            const SizedBox(height: 6),
+          const SizedBox(height: 10),
+          Text(
+            lecture!.summary!.summary,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4),
+          ),
+          if (lecture!.summary!.keyPoints.isNotEmpty) ...[
+            const SizedBox(height: 14),
             Text(
-              'From recorded audio',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: const Color(0xFF5D594E)),
+              'Key Points',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            ...lecture!.summary!.keyPoints.map(
+              (point) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: appSurfaceColor,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.fiber_manual_record,
+                          size: 10,
+                          color: appAccentColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(point)),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
-          const SizedBox(height: 10),
-          Text(lecture!.summary!.summary),
-          const SizedBox(height: 14),
-          Text(
-            'Key Points',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          ...lecture!.summary!.keyPoints.map(
-            (point) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4),
-                    child: Icon(Icons.fiber_manual_record, size: 10),
+          if (lecture!.summary!.actionItems.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Actions',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(point)),
-                ],
+            ),
+            const SizedBox(height: 8),
+            ...lecture!.summary!.actionItems.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: appSurfaceColor,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.arrow_outward_rounded,
+                          size: 18,
+                          color: appBronzeColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(item)),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Actions',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          ...lecture!.summary!.actionItems.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4),
-                    child: Icon(Icons.arrow_right_alt, size: 18),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(child: Text(item)),
-                ],
-              ),
-            ),
-          ),
+          ],
         ],
       ),
     );
@@ -1927,7 +2385,7 @@ class SectionHeader extends StatelessWidget {
               subtitle!,
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF5F594F)),
+              ).textTheme.bodyMedium?.copyWith(color: appMutedTextColor),
             ),
           ],
         ],
@@ -1937,10 +2395,16 @@ class SectionHeader extends StatelessWidget {
 }
 
 class InfoCard extends StatelessWidget {
-  const InfoCard({super.key, required this.title, required this.body});
+  const InfoCard({
+    super.key,
+    required this.title,
+    required this.body,
+    this.icon,
+  });
 
   final String title;
   final String body;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -1950,14 +2414,33 @@ class InfoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (icon != null) ...[
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: appAccentSoftColor,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: appAccentColor),
+              ),
+              const SizedBox(height: 14),
+            ],
             Text(
               title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
             ),
             const SizedBox(height: 10),
-            Text(body),
+            Text(
+              body,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: appMutedTextColor,
+                    height: 1.45,
+                  ),
+            ),
           ],
         ),
       ),
@@ -1974,33 +2457,497 @@ class StatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (status) {
-      'present' => const Color(0xFF1F7A4C),
-      'late' => const Color(0xFFB26A00),
-      'absent' => const Color(0xFFA33A2F),
-      'excused' => const Color(0xFF4461A6),
-      'invalid' => const Color(0xFF5C4C7D),
-      'active' => const Color(0xFF1F7A4C),
-      'ended' => const Color(0xFF6B6258),
-      'processing' => const Color(0xFF4461A6),
-      'pending' => const Color(0xFF835D1B),
-      'completed' => const Color(0xFF1F7A4C),
-      _ => const Color(0xFF6B6258),
+      'present' => const Color(0xFF1F6B45),
+      'late' => const Color(0xFF9B680A),
+      'absent' => const Color(0xFFA34832),
+      'excused' => const Color(0xFF3E6177),
+      'invalid' => const Color(0xFF5D5368),
+      'active' => appAccentColor,
+      'ended' => const Color(0xFF5A5953),
+      'processing' => const Color(0xFF3E6177),
+      'pending' => appBronzeColor,
+      'completed' => const Color(0xFF1F6B45),
+      _ => const Color(0xFF5A5953),
     };
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.14)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         child: Text(
           label,
-          style: TextStyle(color: color, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.1,
+          ),
         ),
       ),
     );
   }
+}
+
+class MetricTile extends StatelessWidget {
+  const MetricTile({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.tone,
+  });
+
+  final String label;
+  final String value;
+  final String tone;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color accent = switch (tone) {
+      'present' => const Color(0xFF1F6B45),
+      'late' => const Color(0xFF9B680A),
+      'absent' => const Color(0xFFA34832),
+      _ => appAccentColor,
+    };
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      decoration: BoxDecoration(
+        color: appMutedSurfaceColor,
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: appMutedTextColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: accent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SessionHistoryTile extends StatelessWidget {
+  const SessionHistoryTile({
+    super.key,
+    required this.session,
+    required this.lecture,
+    required this.meta,
+    required this.onTap,
+  });
+
+  final SessionSummary session;
+  final LectureRecord? lecture;
+  final String meta;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final timestamp = _historyTimestamp(session);
+    final notesLabel = lecture == null
+        ? null
+        : lecture!.isProcessing
+        ? 'Notes running'
+        : 'Notes ready';
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(28),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: appMutedSurfaceColor,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.menu_book_outlined,
+                  color: appAccentColor,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      session.courseCode,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: appMutedTextColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      session.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      timestamp,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: appMutedTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      meta,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: appMutedTextColor,
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (session.isActive)
+                          StatusPill(
+                            label: session.status,
+                            status: session.status,
+                          ),
+                        if (lecture != null)
+                          StatusPill(
+                            label: notesLabel!,
+                            status: lecture!.status,
+                          ),
+                        if (session.attendanceStatus != null)
+                          StatusPill(
+                            label: session.attendanceStatus!,
+                            status: session.attendanceStatus!,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: appMutedSurfaceColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: appMutedTextColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SubPageScaffold extends StatelessWidget {
+  const _SubPageScaffold({
+    required this.title,
+    required this.subtitle,
+    required this.child,
+  });
+
+  final String title;
+  final String subtitle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _HeaderActionButton(
+                    icon: Icons.arrow_back_rounded,
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.5,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            subtitle,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: appMutedTextColor),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            Expanded(child: child),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AttendanceRecordTile extends StatelessWidget {
+  const _AttendanceRecordTile({
+    required this.record,
+    required this.allowOverrides,
+    required this.onOverrideAttendance,
+  });
+
+  final AttendanceRecord record;
+  final bool allowOverrides;
+  final Future<void> Function(AttendanceRecord record, String status)
+  onOverrideAttendance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: appMutedSurfaceColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  record.studentName,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  record.studentEmail,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: appMutedTextColor,
+                  ),
+                ),
+                if (record.checkedInAt != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Checked in ${_formatDateTime(record.checkedInAt!)}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: appMutedTextColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+                if ((record.overrideReason ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    record.overrideReason!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: appMutedTextColor,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          if (allowOverrides)
+            PopupMenuButton<String>(
+              padding: EdgeInsets.zero,
+              onSelected: (status) => onOverrideAttendance(record, status),
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 'present', child: Text('Mark present')),
+                PopupMenuItem(value: 'late', child: Text('Mark late')),
+                PopupMenuItem(value: 'absent', child: Text('Mark absent')),
+                PopupMenuItem(value: 'excused', child: Text('Mark excused')),
+                PopupMenuItem(value: 'invalid', child: Text('Mark invalid')),
+              ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  StatusPill(label: record.status, status: record.status),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.more_horiz, color: appMutedTextColor),
+                ],
+              ),
+            )
+          else
+            StatusPill(label: record.status, status: record.status),
+        ],
+      ),
+    );
+  }
+}
+
+class _NetworkBanner extends StatelessWidget {
+  const _NetworkBanner({required this.ssid});
+
+  final String ssid;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: appAccentSoftColor,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(
+                Icons.wifi_tethering,
+                color: appAccentColor,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Campus Wi-Fi',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    ssid,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: appMutedTextColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const _RoleChip(label: 'Verified'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderActionButton extends StatelessWidget {
+  const _HeaderActionButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: appSurfaceColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: appBorderColor),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: SizedBox(
+          width: 46,
+          height: 46,
+          child: Icon(icon, size: 20),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleChip extends StatelessWidget {
+  const _RoleChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: appAccentSoftColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: appAccentColor,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+String _lecturerHistoryMeta(SessionReport? report) {
+  if (report == null) {
+    return 'Attendance unavailable';
+  }
+
+  return '${report.counts['present'] ?? 0} present · '
+      '${report.counts['late'] ?? 0} late · '
+      '${report.counts['absent'] ?? 0} absent';
+}
+
+String _historyTimestamp(SessionSummary session) {
+  final time =
+      session.endedAt ?? session.startedAt ?? session.latestLectureCreatedAt;
+  if (time == null) {
+    return 'No timestamp';
+  }
+  return _formatDateTime(time);
 }
 
 List<SessionSummary> _sortSessionsNewestFirst(Iterable<SessionSummary> sessions) {

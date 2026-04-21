@@ -47,7 +47,7 @@ test('attendance status becomes late after 20 minutes', () => {
 test('campus network verification accepts localhost or approved SSIDs', () => {
   const config = {
     allowedCidrs: ['127.0.0.1/32', '::1/128'],
-    allowedSsids: ['CampusNet'],
+    allowedSsids: ['Wapi-Guest'],
   };
 
   const viaLoopback = verifyCampusNetwork(
@@ -59,7 +59,7 @@ test('campus network verification accepts localhost or approved SSIDs', () => {
 
   const viaSsid = verifyCampusNetwork(
     { headers: {}, socket: { remoteAddress: '10.1.1.22' } },
-    { network: { ssid: 'CampusNet' } },
+    { network: { ssid: 'Wapi-Guest' } },
     config,
   );
   assert.equal(viaSsid.valid, true);

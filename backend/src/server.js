@@ -43,7 +43,7 @@ const config = {
   uploadDir:
     process.env.UPLOAD_DIR || path.join(__dirname, '..', 'uploads'),
   maxUploadBytes: Number(process.env.MAX_AUDIO_UPLOAD_BYTES || 100 * 1024 * 1024),
-  allowedSsids: (process.env.ALLOWED_WIFI_SSIDS || 'CampusNet')
+  allowedSsids: (process.env.ALLOWED_WIFI_SSIDS || 'Wapi-Guest')
     .split(',')
     .map((value) => value.trim())
     .filter(Boolean),
